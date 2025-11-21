@@ -21,9 +21,7 @@ print("Model loaded successfully")
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ------------------------------- #
-#       GRAD-CAM FUNCTION         #
-# ------------------------------- #
+      #GRAD-CAM FUNCTION         
 def generate_gradcam(img_array, last_conv_layer_name=None):
     """
     Returns Grad-CAM heatmap (3-channel RGB).
@@ -76,9 +74,8 @@ def encode_image_base64(image_array):
     return base64.b64encode(buffer).decode('utf-8')
 
 
-# ------------------------------- #
-#        SEVERITY SCORE           #
-# ------------------------------- #
+       #SEVERITY SCORE           
+
 def get_severity(prob):
     if prob < 0.35:
         return "Mild"
@@ -87,10 +84,8 @@ def get_severity(prob):
     else:
         return "Severe"
 
+     # PREDICT ROUTE           
 
-# ------------------------------- #
-#         PREDICT ROUTE           #
-# ------------------------------- #
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -119,17 +114,17 @@ def predict():
         result = "Cracks Detected" if prediction > 0.5 else "No Cracks Detected"
         confidence = float(prediction if prediction > 0.5 else (1 - prediction))
 
-        # ------------------------------- #
-        #           GRAD-CAM              #
-        # ------------------------------- #
+       
+        # GRAD-CAM              #
+       
         heatmap = generate_gradcam(img_array)
         overlay = overlay_gradcam(original_img, heatmap)
 
         gradcam_b64 = encode_image_base64(overlay)
 
-        # ------------------------------- #
-        #         SEVERITY SCORE          #
-        # ------------------------------- #
+        
+        # SEVERITY SCORE        
+      
         severity = get_severity(float(prediction))
 
         # clean up uploaded file 
