@@ -7,8 +7,8 @@
 ## 📖 About The Project
 
 This project showcases my learnings from the Learning Utsav 2025 Challenge, where I applied the concepts and skills I gained throughout the program.
-The idea for SafeQuake came randomly when I saw an article about earthquakes in our country, Nepal — highly prone to seismic activity. The Gorkha earthquake of 2015 claimed nearly 9,000 lives and destroyed over 600,000 structures.
-Even today, many homes still carry hidden structural damage, and people continue living in them — which poses serious risk. Cracks and weakened surfaces can be life threatening if another earthquake strikes.
+The idea for SafeQuake came randomly when I saw an article about earthquakes in our country, Nepal is highly prone to seismic activity. The Gorkha earthquake of 2015 claimed nearly 9,000 lives and destroyed over 600,000 structures.
+Even today, many homes still carry hidden structural damage, and people continue living in them , which poses serious risk. Cracks and weakened surfaces can be life threatening if another earthquake strikes.
 
 **The Problem:** Hiring a structural engineer for proper damage assessment is expensive and inaccessible for many families. Self-assessment without technical expertise is unreliable and potentially dangerous.
 
