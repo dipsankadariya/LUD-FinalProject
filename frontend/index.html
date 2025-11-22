@@ -8,51 +8,119 @@
 </head>
 <body>
   <div class="container">
+    <!-- Left Panel - Upload Section -->
     <div class="upload-section">
-      <h2>SafeQuake</h2>
-      <p class="description">Upload an image of a structure to detect cracks.</p>
+      <div class="brand">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 21h18M9 8h1M14 8h1M9 12h1M14 12h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/>
+          </svg>
+        </div>
+        <h1>SafeQuake</h1>
+      </div>
+      <p class="description">SafeQuake is an AI-powered structural cracks detection system.Upload  image to analyze potential damage.</p>
 
       <input type="file" id="fileInput" accept="image/*" style="display: none;">
-      <button id="chooseFileBtn" type="button">Choose Image</button>
-      <button id="uploadBtn" type="button">Analyze Image</button>
-      <img id="previewImage" alt="Preview">
+      <div class="upload-area" id="dropZone">
+        <div class="upload-content">
+          <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          <p class="upload-text">Drag & drop an image here</p>
+          <p class="upload-subtext">or click to browse</p>
+        </div>
+      </div>
+
+      <div class="preview-container" id="previewContainer">
+        <img id="previewImage" alt="Preview">
+        <button class="remove-btn" id="removeBtn">&times;</button>
+      </div>
+
+      <button id="uploadBtn" type="button" disabled>
+        <span class="btn-text">Analyze Image</span>
+        <span class="btn-loader"></span>
+      </button>
     </div>
 
-    <div id="result"></div>
+    <!-- Right Panel - Results Section -->
+    <div class="results-section" id="resultsSection">
+      <div class="empty-state" id="emptyState">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <h3>No Analysis Yet</h3>
+        <p>Upload an image to see crack detection results</p>
+      </div>
+
+      <div class="results-content" id="resultsContent">
+        <!-- Results will be injected here -->
+      </div>
+    </div>
   </div>
 
   <script>
     const fileInput = document.getElementById("fileInput");
-    const chooseFileBtn = document.getElementById("chooseFileBtn");
+    const dropZone = document.getElementById("dropZone");
     const previewImage = document.getElementById("previewImage");
-    const resultDiv = document.getElementById("result");
+    const previewContainer = document.getElementById("previewContainer");
+    const removeBtn = document.getElementById("removeBtn");
     const uploadBtn = document.getElementById("uploadBtn");
+    const resultsContent = document.getElementById("resultsContent");
+    const emptyState = document.getElementById("emptyState");
 
-    chooseFileBtn.addEventListener('click', () => fileInput.click());
+    // Drag and drop handlers
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
 
-    fileInput.addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          previewImage.src = e.target.result;
-          previewImage.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
-        resultDiv.classList.remove('show');
-        resultDiv.innerHTML = "";
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        handleFile(file);
       }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        previewContainer.classList.add('show');
+        dropZone.classList.add('hidden');
+        uploadBtn.disabled = false;
+        emptyState.style.display = 'flex';
+        resultsContent.innerHTML = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removeBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      previewContainer.classList.remove('show');
+      dropZone.classList.remove('hidden');
+      uploadBtn.disabled = true;
     });
 
     uploadBtn.addEventListener('click', async () => {
       const file = fileInput.files[0];
-      if (!file) {
-        alert("Please select an image first!");
-        return;
-      }
+      if (!file) return;
 
+      uploadBtn.classList.add('loading');
       uploadBtn.disabled = true;
-      uploadBtn.textContent = "Analyzing...";
 
       const formData = new FormData();
       formData.append("file", file);
@@ -64,28 +132,98 @@
         });
 
         const data = await response.json();
-
-        resultDiv.classList.add("show");
+        emptyState.style.display = 'none';
 
         if (data.error) {
-          resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+          resultsContent.innerHTML = `<div class="error-message">${data.error}</div>`;
         } else {
-          resultDiv.innerHTML = `
-            <h3>${data.prediction}</h3>
-            <p><strong>Confidence:</strong> ${data.confidence}</p>
-            <p><strong>Crack Probability:</strong> ${data.crack_probability}</p>
-            <p><strong>Safe Probability:</strong> ${data.safe_probability}</p>
-          `;
+          displayResults(data);
         }
       } catch (error) {
-        resultDiv.classList.add("show");
-        resultDiv.innerHTML = `<p style="color:red;">Error connecting to backend!</p>`;
+        emptyState.style.display = 'none';
+        resultsContent.innerHTML = `<div class="error-message">Error connecting to server</div>`;
         console.error(error);
       } finally {
+        uploadBtn.classList.remove('loading');
         uploadBtn.disabled = false;
-        uploadBtn.textContent = "Analyze Image";
       }
     });
+
+    function displayResults(data) {
+      const isCrack = data.prediction === "Cracks Detected";
+      const sev = data.severity;
+      
+      let html = `
+        <!-- Status Badge -->
+        <div class="status-badge ${isCrack ? 'danger' : 'safe'}">
+          <span class="status-icon">${isCrack ? '⚠️' : '✓'}</span>
+          <span class="status-text">${data.prediction}</span>
+        </div>
+
+        <!-- Probability Cards -->
+        <div class="prob-cards">
+          <div class="prob-card">
+            <span class="prob-label">Crack Probability</span>
+            <span class="prob-value danger">${data.crack_probability}</span>
+          </div>
+          <div class="prob-card">
+            <span class="prob-label">Safe Probability</span>
+            <span class="prob-value safe">${data.safe_probability}</span>
+          </div>
+        </div>
+      `;
+
+      // GradCAM Section
+      if (data.gradcam_image) {
+        html += `
+          <div class="gradcam-section">
+            <h4>GradCAM Analysis</h4>
+            <div class="gradcam-images">
+              <div class="gradcam-box">
+                <img src="${previewImage.src}" alt="Original">
+                <span>Original</span>
+              </div>
+              <div class="gradcam-box">
+                <img src="data:image/jpeg;base64,${data.gradcam_image}" alt="Heatmap">
+                <span>Focus Areas</span>
+              </div>
+            </div>
+            <p class="gradcam-hint">Red/yellow regions indicate areas the AI focused on</p>
+          </div>
+        `;
+      }
+
+      // Severity Section
+      if (sev) {
+        html += `
+          <div class="severity-section" style="--severity-color: ${sev.color}">
+            <div class="severity-header">
+              <div class="severity-badge" style="background: ${sev.color}">${sev.level}</div>
+              <div class="severity-score">${sev.score}<span>/100</span></div>
+            </div>
+            <p class="severity-desc">${sev.description}</p>
+            <div class="severity-details">
+              <div class="detail-item">
+                <span class="detail-icon">📋</span>
+                <div>
+                  <strong>Recommendation</strong>
+                  <p>${sev.recommendation}</p>
+                </div>
+              </div>
+              <div class="detail-item action">
+                <span class="detail-icon">⚡</span>
+                <div>
+                  <strong>Action Required</strong>
+                  <p>${sev.action_required}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      resultsContent.innerHTML = html;
+    }
   </script>
 </body>
 </html>

@@ -9,30 +9,30 @@ print("="*60)
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "best_model.keras")
 
-print(f"\n1. Checking if model file exists...")
-print(f"   Path: {MODEL_PATH}")
-print(f"   Exists: {os.path.exists(MODEL_PATH)}")
+print(f"\n1.checking if model file exists...")
+print(f"path: {MODEL_PATH}")
+print(f" exists: {os.path.exists(MODEL_PATH)}")
 
 if not os.path.exists(MODEL_PATH):
-    print("   ❌ Model file not found!")
+    print("model file not found!")
     exit(1)
 
 print(f"   File size: {os.path.getsize(MODEL_PATH) / (1024*1024):.2f} MB")
 
-print(f"\n2. Attempting to load model...")
+print(f"\n2. trying  to load model...")
 try:
     model = load_model(MODEL_PATH, compile=False)
-    print("   ✅ Model loaded successfully (without compile)")
+    print("model loaded successfully (without compile)")
 except Exception as e:
-    print("   ❌ Failed to load model!")
-    print(f"   Error: {e}")
+    print("    failed to load model!")
+    print(f"   error: {e}")
     exit(1)
 
-print(f"\n3. Model Architecture Info:")
+print(f"\n3. model Architecture Info:")
 print(f"   Model name: {model.name}")
-print(f"   Total layers: {len(model.layers)}")
-print(f"   Input shape: {model.input_shape}")
-print(f"   Output shape: {model.output_shape}")
+print(f"   total layers: {len(model.layers)}")
+print(f"   input shape: {model.input_shape}")
+print(f"   output shape: {model.output_shape}")
 
 print(f"\n4. First 5 layers:")
 for i, layer in enumerate(model.layers[:5]):
@@ -57,19 +57,28 @@ for layer in model.layers:
 if not stem_conv_found:
     print("   stem_conv layer not found in model")
 
-print(f"\n6. Testing model with RGB input:")
+print(f"\n6.testing model with RGB input:")
 test_rgb = np.random.rand(1, 224, 224, 3).astype(np.float32)
-print(f"   Test input shape: {test_rgb.shape}")
+print(f"test input shape: {test_rgb.shape}")
 
 try:
     output = model.predict(test_rgb, verbose=0)
-    print("   ✅ Prediction successful!")
+    print("prediction successful!")
     print(f"   Output shape: {output.shape}")
     print(f"   Output value: {output[0][0]:.4f}")
 except Exception as e:
-    print("   ❌ Prediction failed!")
+    print("    Prediction failed!")
     print(f"   Error: {e}")
 
 print("\n" + "="*60)
 print("DIAGNOSIS COMPLETE")
 print("="*60)
+
+# checking the layers name, cause its nested
+from tensorflow.keras.models import load_model
+model = load_model("./models/best_model.keras")
+efficientnet_base = model.get_layer('efficientnetb0')
+print("EfficientNet layers with 'conv' in name:")
+for layer in efficientnet_base.layers:
+    if 'conv' in layer.name.lower():
+        print(f"  {layer.name}: {layer.output.shape}")
