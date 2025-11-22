@@ -140,7 +140,7 @@ def assess_severity(prediction, heatmap):
         prediction * 50 +
         heatmap_mean * 25 +
         high_intensity_ratio * 25
-    ) * 100
+    ) 
     
     if prediction < 0.5:
         return {
