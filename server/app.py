@@ -12,8 +12,12 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# first, lets load the model
-MODEL_PATH = "./models/best_model.keras"
+# # first, lets load the model
+# MODEL_PATH = "./models/best_model.keras"
+# Get absolute path to model
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "best_model.keras")
+
 model = load_model(MODEL_PATH)
 print("Model loaded successfully")
 
