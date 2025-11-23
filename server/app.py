@@ -26,46 +26,31 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # ============== Build a fresh GradCAM-compatible model ==============
 print("Building GradCAM model...")
 
-# Get EfficientNet base
-efficientnet_base = model.get_layer('efficientnetb0')
-
-# Create a new combined model that outputs both conv features and final prediction
-# Input
-inp = model.input
-
-# Pass through data augmentation
-data_aug = model.get_layer('data_augmentation')
-x = data_aug(inp)
-
-# Get EfficientNet outputs - we need both the conv features and the final output
-# Create a model from efficientnet that gives us the top_conv output
-top_conv_output = efficientnet_base.get_layer('top_conv').output
-efficientnet_with_conv = Model(
-    inputs=efficientnet_base.input,
-    outputs=[top_conv_output, efficientnet_base.output]
-)
-
-# Pass augmented input through efficientnet
-conv_features, eff_output = efficientnet_with_conv(x)
-
-# Continue through rest of the model
-x = model.get_layer('global_average_pooling2d_2')(eff_output)
-x = model.get_layer('batch_normalization_4')(x)
-
-# Find and apply remaining layers (dropout and dense)
-for layer in model.layers:
-    if 'dropout' in layer.name.lower():
-        x = layer(x)
-    elif 'dense' in layer.name.lower():
-        x = layer(x)
-
-# Create the GradCAM model
-gradcam_model = Model(inputs=inp, outputs=[conv_features, x])
-print("GradCAM model built successfully!")
+try:
+    # Get the last convolutional layer from EfficientNet
+    efficientnet_base = model.get_layer('efficientnetb0')
+    
+    # Build a model that maps inputs to the last conv layer output and predictions
+    grad_model = Model(
+        inputs=model.input,
+        outputs=[
+            efficientnet_base.get_layer('top_conv').output,
+            model.output
+        ]
+    )
+    gradcam_model = grad_model
+    print("GradCAM model built successfully!")
+except Exception as e:
+    print(f"Warning: Could not build GradCAM model: {e}")
+    gradcam_model = None
 
 
 def get_gradcam_heatmap(img_array):
     """Generate GradCAM heatmap using the custom gradcam_model."""
+    if gradcam_model is None:
+        print("GradCAM model not available, returning default heatmap")
+        return np.ones((7, 7)) * 0.5
+    
     try:
         with tf.GradientTape() as tape:
             # Get conv outputs and predictions
