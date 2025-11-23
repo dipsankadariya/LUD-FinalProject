@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+uploads/
+*.keras
+*.h5
+.env
+.DS_Store
+```
