@@ -12,8 +12,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# # first, lets load the model
-# MODEL_PATH = "./models/best_model.keras"
 # Get absolute path to model
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "best_model.keras")
@@ -22,7 +20,7 @@ model = load_model(MODEL_PATH)
 print("Model loaded successfully")
 
 # then lets create temporary directory named 'uploads' where we will save uploaded files
-UPLOAD_FOLDER = "uploads"
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ============== Build a fresh GradCAM-compatible model ==============
@@ -257,12 +255,14 @@ def predict():
 
 @app.route("/")
 def home():
-    return send_from_directory('../frontend', 'index.html')
+    frontend_dir = os.path.join(os.path.dirname(BASE_DIR), 'frontend')
+    return send_from_directory(frontend_dir, 'index.html')
 
 
 @app.route("/<path:filename>")
 def serve_static(filename):
-    return send_from_directory('../frontend', filename)
+    frontend_dir = os.path.join(os.path.dirname(BASE_DIR), 'frontend')
+    return send_from_directory(frontend_dir, filename)
 
 
 if __name__ == "__main__":
