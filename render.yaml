@@ -1,9 +1,10 @@
 services:
   - type: web
     name: safequake-app
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn --bind 0.0.0.0:$PORT server.app:app"
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT server.app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.7"
