@@ -349,20 +349,6 @@ Analyze an image for structural cracks.
 
 ---
 
-## 🎯 I am aiming to update this project further and add:
-
-| Feature | Status |
-|---------|--------|
-| Multi-image building scan | 🔄 Planned |
-| Mobile-responsive design | 🔄 Planned |
-| PDF report generation | 🔄 Planned |
-| Crack measurement (dimensions) | 🔄 Planned |
-| Historical tracking | 🔄 Planned |
-| Floor plan integration | 🔄 Planned |
-| Offline mobile app | 🔄 Planned |
-
----
-
 ## 📜 License
 
 This project is licensed under the **MIT License** 
